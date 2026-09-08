@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "PRISMS Parent",
+    "slug": "prisms-parent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "prismparent",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#00629e"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.prisms.parent"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#00629e"
+      },
+      "package": "com.prisms.parent"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "expo-notifications",
+        {
+          "color": "#00629e"
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
