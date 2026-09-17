@@ -1,0 +1,113 @@
+import React, { useState } from "react";
+import { Text, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
+import {
+  AppBar,
+  PinKeypad,
+  PINInput,
+  PrimaryButton,
+  Screen,
+} from "../../src/components";
+import { apiFetch, setTokens } from "../../src/lib/api";
+import { getDeviceId, getPlatform } from "../../src/lib/device";
+import { registerPushIfAvailable } from "../../src/lib/push";
+
+/**
+ * Sign-in for returning parents: Parent ID (systemId) + 4-digit PIN — the
+ * credential pair the platform issues. Phone-OTP enrollment lands with the
+ * OTP service (see docs/parent-mobile-implementation.md §4.2).
+ */
+export default function LoginScreen() {
+  const router = useRouter();
+  const [parentId, setParentId] = useState("");
+  const [pin, setPin] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const onDigit = (d: string) => {
+    if (busy || pin.length >= 4) return;
+    setError(undefined);
+    setPin(pin + d);
+  };
+  const onDelete = () => {
+    if (!busy) setPin(pin.slice(0, -1));
+  };
+
+  const onSignIn = async () => {
+    if (busy || pin.length < 4 || !parentId.trim()) return;
+    setBusy(true);
+    setError(undefined);
+    try {
+      const res = await apiFetch<{
+        accessToken: string;
+        refreshToken: string;
+      }>("/v1/mobile/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          systemId: parentId.trim(),
+          pin,
+          deviceId: await getDeviceId(),
+          platform: getPlatform(),
+        }),
+      });
+      if (!res.data) {
+        setError(res.error?.message ?? "Sign-in failed. Try again.");
+        setPin("");
+        return;
+      }
+      await setTokens(res.data.accessToken, res.data.refreshToken);
+      void registerPushIfAvailable();
+      router.replace("/(tabs)/home");
+    } catch {
+      setError("Network problem — check your connection.");
+      setPin("");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Screen>
+      <AppBar
+        title="Welcome back"
+        subtitle="Sign in with your Parent ID and PIN"
+      />
+      <Text className="mb-2 font-label-md text-label-md text-on-surface-variant">
+        Parent ID
+      </Text>
+      <TextInput
+        accessibilityLabel="Parent ID"
+        autoCapitalize="none"
+        autoCorrect={false}
+        editable={!busy}
+        onChangeText={(value) => {
+          setParentId(value);
+          setError(undefined);
+        }}
+        placeholder="e.g. PR-2026-0142"
+        placeholderTextColor="#6f7883"
+        value={parentId}
+        className="mb-4 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 font-body-md text-body-md text-on-surface"
+      />
+      <Text className="mb-2 font-label-md text-label-md text-on-surface-variant">
+        PIN
+      </Text>
+      <PINInput filled={pin.length} />
+      {error ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          className="mb-3 mt-2 text-center font-label-md text-label-md text-error"
+        >
+          {error}
+        </Text>
+      ) : null}
+      <View className="h-2" />
+      <PinKeypad onDigit={onDigit} onDelete={onDelete} />
+      <PrimaryButton
+        label={busy ? "Signing in…" : "Sign in"}
+        disabled={busy || pin.length < 4 || !parentId.trim()}
+        onPress={onSignIn}
+      />
+    </Screen>
+  );
+}

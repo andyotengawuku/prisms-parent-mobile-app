@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "PRIS Parents",
+    "slug": "pris-parent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "prisparent",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#76023a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pris.parent"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#76023a"
+      },
+      "package": "com.pris.parent"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "expo-notifications",
+        {
+          "color": "#76023a"
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
