@@ -88,6 +88,8 @@ function RootNavigator() {
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen name="pickup" options={{ animation: "slide_from_right" }} />
+        <Stack.Screen name="canteen" options={{ animation: "slide_from_right" }} />
+        <Stack.Screen name="notice" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
       </Stack>
     </>
   );

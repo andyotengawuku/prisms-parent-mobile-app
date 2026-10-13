@@ -131,6 +131,18 @@ export default function HomeScreen() {
           onPress={() => router.push("/(tabs)/alerts")}
         />
       </View>
+      <View className="mb-stack-md flex-row gap-3">
+        <QuickActionTile
+          label="Canteen"
+          icon="food-outline"
+          onPress={() => router.push("/canteen")}
+        />
+        <QuickActionTile
+          label="Notify school"
+          icon="email-alert-outline"
+          onPress={() => router.push("/notice")}
+        />
+      </View>
 
       <SectionHeader title="Lunch wallet" />
       {data.lunchWalletAvailable ? (

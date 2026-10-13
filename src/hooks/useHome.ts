@@ -21,6 +21,8 @@ type ApiChild = {
   movementStatus: string;
   lunchWallet: { balanceMinor: number; hasWallet: boolean };
   outstandingFees: { amountMinor: number };
+  usualDropoffTime?: string | null;
+  usualPickupTime?: string | null;
 };
 
 type ApiHome = {
@@ -67,6 +69,8 @@ function mapChild(child: ApiChild): Child {
     lunchWalletMinor: child.lunchWallet.balanceMinor,
     hasLunchWallet: child.lunchWallet.hasWallet,
     outstandingMinor: child.outstandingFees.amountMinor,
+    usualDropoffTime: child.usualDropoffTime ?? null,
+    usualPickupTime: child.usualPickupTime ?? null,
   };
 }
 

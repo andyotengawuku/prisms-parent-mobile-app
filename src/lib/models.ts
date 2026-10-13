@@ -28,6 +28,51 @@ export type Child = {
   lunchWalletMinor?: number;
   hasLunchWallet?: boolean;
   outstandingMinor?: number;
+  usualDropoffTime?: string | null;
+  usualPickupTime?: string | null;
+};
+
+export type WalletTransaction = {
+  id: string;
+  type: "topup" | "purchase" | "refund" | "adjustment" | string;
+  amountMinor: number;
+  description?: string | null;
+  mealDate: string;
+};
+
+export type CanteenWallet = {
+  hasWallet: boolean;
+  balanceMinor: number;
+  dailyLimitMinor: number | null;
+  spentTodayMinor: number;
+  spentMonthMinor: number;
+  isActive: boolean;
+  transactions: WalletTransaction[];
+  topups: Array<{ id: string; amountMinor: number; status: string; paymentMethod: string; createdAt: string }>;
+  settings: { enabled: boolean; minTopUpMinor: number; maxTopUpMinor: number };
+};
+
+export type CanteenMenuDay = {
+  dayOfWeek: number;
+  services: Array<{
+    mealService: string;
+    title?: string | null;
+    items: Array<{ name: string; priceMinor?: number | null; notes?: string | null }>;
+    fromDatedWeek: boolean;
+  }>;
+};
+
+export type NoticeItem = {
+  id: string;
+  type: "absence" | "lateness" | string;
+  status: "pending" | "acknowledged" | "dismissed" | string;
+  studentId: string;
+  studentName: string;
+  startDate: string;
+  endDate: string | null;
+  expectedTime: string | null;
+  reason: string;
+  createdAt: string;
 };
 
 export type Invoice = {
