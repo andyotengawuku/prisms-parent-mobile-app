@@ -5,7 +5,7 @@ import type {
   Child,
   HomeData,
   MovementStatus,
-} from "../lib/sample-data";
+} from "../lib/models";
 
 /** Home freshness: 30–60s */
 const STALE_HOME_MS = 45 * 1000;
@@ -18,7 +18,7 @@ type ApiChild = {
   isActive: boolean;
   class: { id: string; name: string; stream?: string | null } | null;
   todayAttendance: { status: string; arrivalTime: string } | null;
-  movementStatus: "at_school" | "at_home";
+  movementStatus: string;
   lunchWallet: { balanceMinor: number; hasWallet: boolean };
   outstandingFees: { amountMinor: number };
 };
@@ -36,7 +36,15 @@ type ApiHome = {
 function toAttendanceStatus(status: string): AttendanceStatus {
   if (status === "present" || status === "late") return "present";
   if (status === "absent") return "absent";
-  return "not_yet";
+  if (status === "excused") return "excused";
+  return "unknown";
+}
+
+function toMovementStatus(status: string): MovementStatus {
+  if (status === "at_school" || status === "at_home" || status === "in_transit") {
+    return status;
+  }
+  return "unknown";
 }
 
 function mapChild(child: ApiChild): Child {
@@ -48,8 +56,6 @@ function mapChild(child: ApiChild): Child {
     firstName: child.firstName,
     lastName: child.lastName,
     className: className || "No class assigned",
-    // "House" (e.g. Blue House) is not yet returned by the API — documented gap.
-    house: "",
     photoUrl: child.photoUrl ?? undefined,
     attendance: child.todayAttendance
       ? {
@@ -57,7 +63,10 @@ function mapChild(child: ApiChild): Child {
           arrivedAt: child.todayAttendance.arrivalTime,
         }
       : { status: "not_yet" },
-    movement: child.movementStatus as MovementStatus,
+    movement: toMovementStatus(child.movementStatus),
+    lunchWalletMinor: child.lunchWallet.balanceMinor,
+    hasLunchWallet: child.lunchWallet.hasWallet,
+    outstandingMinor: child.outstandingFees.amountMinor,
   };
 }
 
@@ -79,10 +88,9 @@ export function useHome() {
         greeting: home.greeting,
         children,
         outstandingMinor: home.stats.totalOutstandingFees.amountMinor,
-        // Invoice selection for the Pay banner lands with the fees wiring.
-        outstandingInvoiceId: null,
         alertsUnread: home.stats.unreadAlerts,
         lunchWalletMinor: primaryWallet?.balanceMinor ?? 0,
+        lunchWalletAvailable: primaryWallet?.hasWallet ?? false,
         // Backend models a dailyLimit, not weekly — screen hides this when null.
         lunchWeeklyLimitMinor: null,
       };

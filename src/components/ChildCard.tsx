@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import type { Child } from "../lib/sample-data";
+import type { Child } from "../lib/models";
 import { AttendanceChip } from "./AttendanceChip";
 import { MovementBadge } from "./MovementBadge";
 import { PressableScale } from "./PressableScale";
@@ -19,7 +19,7 @@ export function ChildCard({ child, onPress, selected, className = "" }: Props) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
-      accessibilityLabel={`${name}, ${child.className}, ${child.house}`}
+      accessibilityLabel={`${name}, ${child.className}`}
       className={`mr-3 w-64 rounded-lg bg-surface-container-lowest p-gutter-card ${
         selected ? "border-2 border-primary" : "border border-outline-variant/30"
       } ${className}`}
@@ -41,7 +41,7 @@ export function ChildCard({ child, onPress, selected, className = "" }: Props) {
         {name}
       </Text>
       <Text className="mb-2 font-body-md text-body-md text-on-surface-variant">
-        {child.className} · {child.house}
+        {child.className}
       </Text>
       <View className="flex-row flex-wrap gap-2">
         <AttendanceChip

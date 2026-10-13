@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Screen } from "../../src/components";
 import { getAccessToken } from "../../src/lib/api";
+import { registerPushIfAvailable } from "../../src/lib/push";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -10,12 +11,17 @@ export default function SplashScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await new Promise((r) => setTimeout(r, 900));
-      if (cancelled) return;
-      const token = await getAccessToken();
-      if (token) {
-        router.replace("/(tabs)/home");
-      } else {
+      try {
+        const token = await getAccessToken();
+        if (cancelled) return;
+        if (token) {
+          void registerPushIfAvailable(false);
+          router.replace("/(tabs)/home");
+        } else {
+          router.replace("/(auth)/login");
+        }
+      } catch {
+        if (cancelled) return;
         router.replace("/(auth)/login");
       }
     })();

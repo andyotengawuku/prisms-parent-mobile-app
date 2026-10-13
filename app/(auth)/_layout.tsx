@@ -10,10 +10,7 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="splash" />
-      <Stack.Screen name="phone" />
-      <Stack.Screen name="otp" />
-      <Stack.Screen name="pin" />
-      <Stack.Screen name="biometric" />
+      <Stack.Screen name="login" />
     </Stack>
   );
 }

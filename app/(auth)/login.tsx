@@ -3,6 +3,7 @@ import { Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import {
   AppBar,
+  FilterChip,
   PinKeypad,
   PINInput,
   PrimaryButton,
@@ -12,17 +13,15 @@ import { apiFetch, setTokens } from "../../src/lib/api";
 import { getDeviceId, getPlatform } from "../../src/lib/device";
 import { registerPushIfAvailable } from "../../src/lib/push";
 
-/**
- * Sign-in for returning parents: Parent ID (systemId) + 4-digit PIN — the
- * credential pair the platform issues. Phone-OTP enrollment lands with the
- * OTP service (see docs/parent-mobile-implementation.md §4.2).
- */
+/** Sign in with the Parent ID and PIN issued by the school. */
 export default function LoginScreen() {
   const router = useRouter();
   const [parentId, setParentId] = useState("");
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [schools, setSchools] = useState<Array<{ id: string; name: string }>>([]);
+  const [schoolId, setSchoolId] = useState<string>();
 
   const onDigit = (d: string) => {
     if (busy || pin.length >= 4) return;
@@ -35,6 +34,10 @@ export default function LoginScreen() {
 
   const onSignIn = async () => {
     if (busy || pin.length < 4 || !parentId.trim()) return;
+    if (schools.length > 0 && !schoolId) {
+      setError("Choose a school to continue.");
+      return;
+    }
     setBusy(true);
     setError(undefined);
     try {
@@ -48,9 +51,24 @@ export default function LoginScreen() {
           pin,
           deviceId: await getDeviceId(),
           platform: getPlatform(),
+          ...(schoolId ? { schoolId } : {}),
         }),
       });
       if (!res.data) {
+        const availableSchools = res.error?.details?.schools;
+        if (res.error?.code === "SCHOOL_SELECTION_REQUIRED" && Array.isArray(availableSchools)) {
+          const choices = availableSchools.filter(
+            (school): school is { id: string; name: string } =>
+              Boolean(school) &&
+              typeof school === "object" &&
+              typeof (school as { id?: unknown }).id === "string" &&
+              typeof (school as { name?: unknown }).name === "string",
+          );
+          setSchools(choices);
+          setSchoolId(undefined);
+          setError("Choose the school you want to access.");
+          return;
+        }
         setError(res.error?.message ?? "Sign-in failed. Try again.");
         setPin("");
         return;
@@ -82,6 +100,8 @@ export default function LoginScreen() {
         editable={!busy}
         onChangeText={(value) => {
           setParentId(value);
+          setSchools([]);
+          setSchoolId(undefined);
           setError(undefined);
         }}
         placeholder="e.g. PR-2026-0142"
@@ -89,6 +109,26 @@ export default function LoginScreen() {
         value={parentId}
         className="mb-4 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 font-body-md text-body-md text-on-surface"
       />
+      {schools.length > 0 ? (
+        <View className="mb-4">
+          <Text className="mb-2 font-label-md text-label-md text-on-surface-variant">
+            Choose school
+          </Text>
+          <View className="flex-row flex-wrap">
+            {schools.map((school) => (
+              <FilterChip
+                key={school.id}
+                label={school.name}
+                selected={school.id === schoolId}
+                onPress={() => {
+                  setSchoolId(school.id);
+                  setError(undefined);
+                }}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null}
       <Text className="mb-2 font-label-md text-label-md text-on-surface-variant">
         PIN
       </Text>
@@ -105,7 +145,7 @@ export default function LoginScreen() {
       <PinKeypad onDigit={onDigit} onDelete={onDelete} />
       <PrimaryButton
         label={busy ? "Signing in…" : "Sign in"}
-        disabled={busy || pin.length < 4 || !parentId.trim()}
+        disabled={busy || pin.length < 4 || !parentId.trim() || (schools.length > 0 && !schoolId)}
         onPress={onSignIn}
       />
     </Screen>

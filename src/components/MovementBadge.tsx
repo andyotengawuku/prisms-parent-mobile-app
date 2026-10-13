@@ -1,11 +1,12 @@
 import React from "react";
 import { Text, View } from "react-native";
-import type { MovementStatus } from "../lib/sample-data";
+import type { MovementStatus } from "../lib/models";
 
 const LABELS: Record<MovementStatus, string> = {
   at_school: "At school",
   at_home: "At home",
   in_transit: "In transit",
+  unknown: "Status unavailable",
 };
 
 type Props = {

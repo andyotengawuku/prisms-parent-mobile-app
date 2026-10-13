@@ -17,7 +17,7 @@ export function LunchWalletCard({
 }: Props) {
   const hasLimit = weeklyLimitMinor !== null && weeklyLimitMinor > 0;
   const pct = hasLimit
-    ? Math.min(100, Math.round((balanceMinor / (weeklyLimitMinor as number)) * 100))
+    ? Math.max(0, Math.min(100, Math.round((balanceMinor / weeklyLimitMinor) * 100)))
     : 0;
   return (
     <View

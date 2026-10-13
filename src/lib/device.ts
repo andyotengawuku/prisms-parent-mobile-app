@@ -1,21 +1,25 @@
 import * as SecureStore from "expo-secure-store";
+import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
 
 const DEVICE_ID_KEY = "prisms_device_id";
 
-function randomId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}-${Math.random()
-    .toString(36)
-    .slice(2, 10)}`;
-}
+let deviceIdInitialization: Promise<string> | null = null;
 
 /** Stable per-install device identifier used for refresh-token binding. */
 export async function getDeviceId(): Promise<string> {
-  const existing = await SecureStore.getItemAsync(DEVICE_ID_KEY);
-  if (existing) return existing;
-  const id = randomId();
-  await SecureStore.setItemAsync(DEVICE_ID_KEY, id);
-  return id;
+  if (!deviceIdInitialization) {
+    deviceIdInitialization = (async () => {
+      const existing = await SecureStore.getItemAsync(DEVICE_ID_KEY);
+      if (existing) return existing;
+      const id = Crypto.randomUUID();
+      await SecureStore.setItemAsync(DEVICE_ID_KEY, id);
+      return id;
+    })().finally(() => {
+      deviceIdInitialization = null;
+    });
+  }
+  return deviceIdInitialization;
 }
 
 export function getPlatform(): "ios" | "android" {

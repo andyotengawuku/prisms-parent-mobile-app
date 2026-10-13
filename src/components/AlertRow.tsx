@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import type { AlertItem } from "../lib/sample-data";
+import type { AlertItem } from "../lib/models";
 import { PressableScale } from "./PressableScale";
 
 const ICONS: Record<

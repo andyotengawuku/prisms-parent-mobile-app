@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import type { Invoice } from "../lib/sample-data";
+import type { Invoice } from "../lib/models";
 import { formatGhs } from "../lib/money";
 import { MoneyText } from "./MoneyText";
 import { StatusChip } from "./StatusChip";

@@ -33,7 +33,18 @@ export function OTPInput({ value, onChange, length = 6 }: Props) {
           }}
           value={digits[i]?.trim() ?? ""}
           onChangeText={(t) => {
-            const digit = t.replace(/\D/g, "").slice(-1);
+            const entered = t.replace(/\D/g, "").slice(0, length);
+            if (entered.length > 1) {
+              const prefix = digits
+                .slice(0, i)
+                .filter((digit) => digit !== " ")
+                .join("");
+              const next = `${prefix}${entered}`.slice(0, length);
+              onChange(next);
+              refs.current[Math.min(next.length, length - 1)]?.focus();
+              return;
+            }
+            const digit = entered.slice(-1);
             setAt(i, digit);
           }}
           onKeyPress={({ nativeEvent }) => {
@@ -42,7 +53,6 @@ export function OTPInput({ value, onChange, length = 6 }: Props) {
             }
           }}
           keyboardType="number-pad"
-          maxLength={1}
           selectTextOnFocus
           allowFontScaling={false}
           accessibilityLabel={`OTP digit ${i + 1}`}

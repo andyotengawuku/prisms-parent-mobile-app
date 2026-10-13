@@ -1,6 +1,6 @@
 import "../global.css";
-import React, { useState } from "react";
-import { Stack } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -13,11 +13,69 @@ import {
 } from "@expo-google-fonts/inter";
 import * as SplashScreen from "expo-splash-screen";
 import { ThemeProvider, useTheme } from "../src/lib/theme";
+import * as Notifications from "expo-notifications";
+import { getAccessToken, onAuthExpired } from "../src/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
 function RootNavigator() {
   const { colorScheme } = useTheme();
+  const router = useRouter();
+  const segments = useSegments();
+  const queryClient = useQueryClient();
+  const routeKey = segments.join("/");
+  const inAuthFlow = segments[0] === "(auth)";
+
+  useEffect(() => {
+    if (!routeKey || routeKey === "index" || routeKey.startsWith("(auth)")) return;
+    let active = true;
+    void getAccessToken()
+      .then((token) => {
+        if (active && !token) router.replace("/(auth)/login");
+      })
+      .catch(() => {
+        if (active) router.replace("/(auth)/login");
+      });
+    return () => {
+      active = false;
+    };
+  }, [routeKey, router]);
+
+  useEffect(
+    () =>
+      onAuthExpired(() => {
+        queryClient.clear();
+        if (!inAuthFlow) router.replace("/(auth)/login");
+      }),
+    [inAuthFlow, queryClient, router],
+  );
+
+  useEffect(() => {
+    let handledResponse = false;
+    const handleResponse = () => {
+      if (handledResponse) return;
+      handledResponse = true;
+      void Notifications.clearLastNotificationResponseAsync().catch(() => {});
+      router.push("/(tabs)/alerts");
+    };
+    const subscription = Notifications.addNotificationResponseReceivedListener(handleResponse);
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) handleResponse();
+      })
+      .catch(() => {});
+    return () => subscription.remove();
+  }, [router]);
+
   return (
     <>
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />

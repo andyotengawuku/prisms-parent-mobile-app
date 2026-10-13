@@ -1,4 +1,5 @@
 import React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AppBar,
   AlertRow,
@@ -8,9 +9,23 @@ import {
   SkeletonBlock,
 } from "../../src/components";
 import { useAlerts } from "../../src/hooks/useFees";
+import { apiFetch } from "../../src/lib/api";
 
 export default function AlertsScreen() {
   const { data, isLoading, isError, refetch } = useAlerts();
+  const queryClient = useQueryClient();
+
+  const markRead = async (id: string) => {
+    const res = await apiFetch<{ success: boolean }>("/notifications", {
+      method: "POST",
+      body: JSON.stringify({ notificationIds: [id] }),
+    });
+    if (res.error) return;
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+      queryClient.invalidateQueries({ queryKey: ["home"] }),
+    ]);
+  };
 
   return (
     <Screen scroll>
@@ -30,7 +45,11 @@ export default function AlertsScreen() {
         />
       ) : null}
       {data?.map((alert) => (
-        <AlertRow key={alert.id} alert={alert} />
+        <AlertRow
+          key={alert.id}
+          alert={alert}
+          onPress={alert.unread ? () => void markRead(alert.id) : undefined}
+        />
       ))}
     </Screen>
   );

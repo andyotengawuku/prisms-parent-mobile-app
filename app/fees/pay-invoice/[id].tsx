@@ -1,47 +1,40 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Linking, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AppBar,
-  BottomSheet,
+  EmptyState,
+  ErrorBanner,
   MoneyText,
-  PaymentMethodRow,
-  PhoneField,
   PrimaryButton,
   Screen,
-  SecondaryButton,
+  SkeletonBlock,
 } from "../../../src/components";
 import { apiFetch } from "../../../src/lib/api";
-import { getDeviceId } from "../../../src/lib/device";
-import { SAMPLE_INVOICES } from "../../../src/lib/sample-data";
+import { useFees } from "../../../src/hooks/useFees";
+import { useHome } from "../../../src/hooks/useHome";
 import { formatGhs } from "../../../src/lib/money";
-
-type Method = "mtn" | "telecel" | "airteltigo" | "card";
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 20;
 
 export default function PayInvoiceScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const invoice =
-    SAMPLE_INVOICES.find((i) => i.id === id) ?? SAMPLE_INVOICES[0]!;
-  const remaining = invoice.amountMinor - invoice.paidMinor;
+  const { data: invoices, isLoading, isError, refetch } = useFees();
+  const home = useHome();
+  const invoice = invoices?.find(
+    (item) => item.id === id && home.data?.children.some((child) => child.id === item.studentId),
+  );
+  const remaining = invoice ? invoice.amountMinor - invoice.paidMinor : 0;
 
-  const [sheetOpen, setSheetOpen] = useState(true);
-  const [method, setMethod] = useState<Method>("mtn");
-  const [momoPhone, setMomoPhone] = useState("241234567");
   const [status, setStatus] = useState<"idle" | "prompt" | "success">("idle");
   const [payError, setPayError] = useState<string | undefined>();
+  const [paymentMessage, setPaymentMessage] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const instruction = useMemo(() => {
-    if (method === "mtn") return "Approve the prompt on your MTN handset";
-    if (method === "telecel") return "Approve the prompt on your Telecel handset";
-    if (method === "airteltigo")
-      return "Approve the prompt on your AirtelTigo handset";
-    return "Complete card checkout securely";
-  }, [method]);
+  const pollInFlight = useRef(false);
 
   const stopPolling = () => {
     if (pollRef.current) {
@@ -53,8 +46,11 @@ export default function PayInvoiceScreen() {
   useEffect(() => stopPolling, []);
 
   const pollStatus = (reference: string) => {
+    stopPolling();
     let attempts = 0;
     pollRef.current = setInterval(async () => {
+      if (pollInFlight.current) return;
+      pollInFlight.current = true;
       attempts += 1;
       try {
         const res = await apiFetch<{ status: string }>(
@@ -65,6 +61,8 @@ export default function PayInvoiceScreen() {
           stopPolling();
           if (current === "success" || current === "paid") {
             setStatus("success");
+            void queryClient.invalidateQueries({ queryKey: ["fees", "invoices"] });
+            void queryClient.invalidateQueries({ queryKey: ["home"] });
           } else {
             setPayError("The payment did not go through. No money is lost — try again.");
             setStatus("idle");
@@ -72,33 +70,31 @@ export default function PayInvoiceScreen() {
         } else if (attempts >= POLL_MAX_ATTEMPTS) {
           stopPolling();
           setPayError(
-            "Still waiting on the MoMo prompt. You can check the receipt under Fees in a moment.",
+            "Payment is still pending. Check Fees before starting another payment.",
           );
           setStatus("idle");
         }
       } catch {
         // transient network error — keep polling until the attempt budget runs out
+      } finally {
+        pollInFlight.current = false;
       }
     }, POLL_INTERVAL_MS);
   };
 
   const pay = async () => {
+    if (!invoice) return;
     setPayError(undefined);
+    setPaymentMessage("Starting secure checkout…");
     setStatus("prompt");
     try {
       const res = await apiFetch<{
         reference: string;
-        authorizationUrl: string;
+        authorizationUrl?: string;
       }>("/v1/mobile/payments/momo", {
         method: "POST",
-        headers: {
-          "Idempotency-Key": `${invoice.id}-${await getDeviceId()}`,
-        },
         body: JSON.stringify({
           invoiceId: invoice.id,
-          ...(method !== "card"
-            ? { provider: method, phone: momoPhone }
-            : {}),
         }),
       });
 
@@ -108,8 +104,15 @@ export default function PayInvoiceScreen() {
         return;
       }
 
-      if (method === "card" && res.data.authorizationUrl) {
-        await Linking.openURL(res.data.authorizationUrl);
+      if (res.data.authorizationUrl) {
+        const checkoutUrl = new URL(res.data.authorizationUrl);
+        if (checkoutUrl.protocol !== "https:") {
+          throw new Error("Payment checkout URL must use HTTPS");
+        }
+        await Linking.openURL(checkoutUrl.toString());
+        setPaymentMessage("Complete payment in secure checkout, then return here.");
+      } else {
+        setPaymentMessage("A payment is already pending. Checking its status…");
       }
       pollStatus(res.data.reference);
     } catch {
@@ -117,6 +120,56 @@ export default function PayInvoiceScreen() {
       setStatus("idle");
     }
   };
+
+  if ((isLoading && !invoices) || (home.isLoading && !home.data)) {
+    return (
+      <Screen>
+        <AppBar title="Pay invoice" onBack={() => router.back()} />
+        <SkeletonBlock />
+      </Screen>
+    );
+  }
+
+  if (isError || home.isError) {
+    return (
+      <Screen>
+        <AppBar title="Pay invoice" onBack={() => router.back()} />
+        <ErrorBanner
+          message="Couldn't load this invoice."
+          onRetry={() => {
+            void refetch();
+            void home.refetch();
+          }}
+        />
+      </Screen>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <Screen>
+        <AppBar title="Pay invoice" onBack={() => router.back()} />
+        <EmptyState
+          title="Invoice not found"
+          description="This invoice may have been paid or is no longer available."
+          icon="script-text-outline"
+        />
+      </Screen>
+    );
+  }
+
+  if (invoice.status === "paid" || remaining <= 0) {
+    return (
+      <Screen>
+        <AppBar title="Invoice" onBack={() => router.back()} />
+        <EmptyState
+          title="Invoice already paid"
+          description="There is no balance left to pay on this invoice."
+          icon="check-circle-outline"
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -131,7 +184,7 @@ export default function PayInvoiceScreen() {
         </Text>
         <MoneyText minorUnits={remaining} className="my-1" />
         <Text
-          accessibilityLabel={`Overdue, ${formatGhs(remaining)}, due 15 Oct`}
+          accessibilityLabel={`Amount due ${formatGhs(remaining)}, due ${new Date(invoice.dueDate).toLocaleDateString("en-GH")}`}
           className="font-label-md text-label-md text-tertiary"
         >
           Amount due
@@ -150,13 +203,18 @@ export default function PayInvoiceScreen() {
         </View>
       ) : (
         <>
-          <SecondaryButton
-            label="Choose payment method"
-            onPress={() => setSheetOpen(true)}
+          <Text className="mb-3 text-center font-body-md text-body-md text-on-surface-variant">
+            Choose MoMo or card on the secure checkout page.
+          </Text>
+          <PrimaryButton
+            label={`Pay ${formatGhs(remaining)}`}
+            loading={status === "prompt"}
+            onPress={() => void pay()}
+            accessibilityLabel={`Pay ${formatGhs(remaining)}`}
           />
           {status === "prompt" ? (
             <Text className="mt-4 text-center font-body-md text-body-md text-primary">
-              {instruction}…
+              {paymentMessage}
             </Text>
           ) : null}
           {payError ? (
@@ -169,57 +227,6 @@ export default function PayInvoiceScreen() {
           ) : null}
         </>
       )}
-
-      <BottomSheet visible={sheetOpen && status !== "success"} onClose={() => setSheetOpen(false)}>
-        <Text className="mb-3 font-headline-sm text-headline-sm text-on-surface">
-          Pay with
-        </Text>
-        <PaymentMethodRow
-          label="MTN MoMo"
-          subtitle="Most common in Ghana"
-          icon="cellphone"
-          selected={method === "mtn"}
-          onPress={() => setMethod("mtn")}
-        />
-        <PaymentMethodRow
-          label="Telecel Cash"
-          icon="cellphone-wireless"
-          selected={method === "telecel"}
-          onPress={() => setMethod("telecel")}
-        />
-        <PaymentMethodRow
-          label="AirtelTigo Money"
-          icon="cellphone-check"
-          selected={method === "airteltigo"}
-          onPress={() => setMethod("airteltigo")}
-        />
-        <PaymentMethodRow
-          label="Card"
-          subtitle="Visa / Mastercard"
-          icon="credit-card-outline"
-          selected={method === "card"}
-          onPress={() => setMethod("card")}
-        />
-        {method !== "card" ? (
-          <PhoneField
-            label="MoMo number"
-            value={momoPhone}
-            onChangeText={setMomoPhone}
-          />
-        ) : null}
-        <Text className="mb-3 font-body-md text-body-md text-on-surface-variant">
-          {instruction}
-        </Text>
-        <PrimaryButton
-          label={`Pay ${formatGhs(remaining)}`}
-          loading={status === "prompt"}
-          onPress={() => {
-            setSheetOpen(false);
-            pay();
-          }}
-          accessibilityLabel={`Pay ${formatGhs(remaining)}`}
-        />
-      </BottomSheet>
     </Screen>
   );
 }

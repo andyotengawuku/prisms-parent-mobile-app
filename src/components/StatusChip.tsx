@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import type { FeeStatus } from "../lib/sample-data";
+import type { FeeStatus } from "../lib/models";
 
 type Props = {
   status: FeeStatus;

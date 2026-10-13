@@ -9,11 +9,12 @@ const GHS_FORMATTER = new Intl.NumberFormat("en-GH", {
 });
 
 export function formatGhs(minorUnits: number): string {
-  return GHS_FORMATTER.format(minorUnits / 100).replace("GHS", "₵").trim();
+  const safeMinorUnits = Number.isFinite(minorUnits) ? minorUnits : 0;
+  return GHS_FORMATTER.format(safeMinorUnits / 100).replace("GHS", "₵").trim();
 }
 
 export function toMinorUnits(major: number): number {
-  return Math.round(major * 100);
+  return Number.isFinite(major) ? Math.round(major * 100) : 0;
 }
 
 export function fromMinorUnits(minor: number): number {
@@ -22,6 +23,7 @@ export function fromMinorUnits(minor: number): number {
 
 export function parseGhsInput(value: string): number | null {
   const cleaned = value.replace(/[₵,\s]/g, "");
+  if (!cleaned) return null;
   const n = Number(cleaned);
   if (!Number.isFinite(n)) return null;
   return toMinorUnits(n);

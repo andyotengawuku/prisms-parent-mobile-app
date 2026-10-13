@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import type { AttendanceStatus } from "../lib/sample-data";
+import type { AttendanceStatus } from "../lib/models";
 
 type Props = {
   status: AttendanceStatus;
@@ -34,6 +34,12 @@ export function AttendanceChip({ status, arrivedAt }: Props) {
     a11y = "Absent";
     bg = "bg-tertiary/12";
     fg = "text-tertiary";
+  } else if (status === "excused") {
+    label = "Excused";
+    a11y = "Excused absence";
+  } else if (status === "unknown") {
+    label = "Status unavailable";
+    a11y = "Attendance status unavailable";
   }
 
   return (
