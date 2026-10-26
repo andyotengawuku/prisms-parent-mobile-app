@@ -12,7 +12,7 @@ export function MoneyText({ minorUnits, className = "", accessibilityLabel }: Pr
   const formatted = formatGhs(minorUnits);
   return (
     <Text
-      className={`font-currency-display text-currency-display text-on-surface ${className}`}
+      className={`font-currency-display text-currency-display tabular-nums text-on-surface ${className}`}
       accessibilityLabel={accessibilityLabel ?? formatted}
     >
       {formatted}

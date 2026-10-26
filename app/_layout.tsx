@@ -6,12 +6,16 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import {
-  Nunito_400Regular,
-  Nunito_500Medium,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-} from "@expo-google-fonts/nunito";
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+} from "@expo-google-fonts/outfit";
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from "@expo-google-fonts/plus-jakarta-sans";
 import * as SplashScreen from "expo-splash-screen";
 import { ThemeProvider, useTheme } from "../src/lib/theme";
 import * as Notifications from "expo-notifications";
@@ -110,11 +114,14 @@ export default function RootLayout() {
   );
 
   const [fontsLoaded] = useFonts({
-    Inter: Nunito_400Regular,
-    InterMedium: Nunito_500Medium,
-    InterSemiBold: Nunito_600SemiBold,
-    InterBold: Nunito_700Bold,
-    InterExtraBold: Nunito_800ExtraBold,
+    // mgTix-style pairing: Outfit for headings/figures, Plus Jakarta Sans for body.
+    Inter: PlusJakartaSans_400Regular,
+    InterMedium: PlusJakartaSans_500Medium,
+    InterSemiBold: PlusJakartaSans_600SemiBold,
+    InterBold: PlusJakartaSans_700Bold,
+    OutfitSemiBold: Outfit_600SemiBold,
+    OutfitBold: Outfit_700Bold,
+    OutfitExtraBold: Outfit_800ExtraBold,
   });
 
   if (!fontsLoaded) {

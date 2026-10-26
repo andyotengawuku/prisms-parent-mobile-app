@@ -41,11 +41,11 @@ export function SettingsRow({
           value={switchValue}
           onValueChange={onSwitchChange}
           accessibilityLabel={label}
-          trackColor={{ false: "#d5c2c6", true: "#ffc904" }}
+          trackColor={{ false: "#d9d2c8", true: "#ffc904" }}
           thumbColor="#ffffff"
         />
       ) : (
-        <MaterialCommunityIcons name="chevron-right" size={22} color="#837377" />
+        <MaterialCommunityIcons name="chevron-right" size={22} color="#8c8479" />
       )}
     </>
   );

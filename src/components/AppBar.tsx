@@ -27,7 +27,7 @@ export function AppBar({ title, subtitle, eyebrow, onBack, showLogo, right }: Pr
             <MaterialCommunityIcons
               name="arrow-left"
               size={24}
-              color="#201a1c"
+              color="#1c1a17"
             />
           </PressableScale>
         ) : null}
