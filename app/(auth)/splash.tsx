@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Screen } from "../../src/components";
 import { getAccessToken } from "../../src/lib/api";
@@ -33,16 +33,16 @@ export default function SplashScreen() {
   return (
     <Screen padded={false} edges={["top", "bottom", "left", "right"]}>
       <View className="flex-1 items-center justify-center bg-primary">
-        <View className="mb-4 h-20 w-20 items-center justify-center rounded-2xl bg-primary-container">
-          <Text className="font-display-lg text-display-lg text-on-primary-container">
-            P
-          </Text>
-        </View>
-        <Text className="font-display-lg text-[24px] text-on-primary">
-          PRISMS
+        <Image
+          source={require("../../assets/school-logo.png")}
+          style={{ width: 112, height: 112 }}
+          accessibilityLabel="School logo"
+        />
+        <Text className="mt-4 font-display-lg text-[24px] text-on-primary">
+          PRIS
         </Text>
         <Text className="mt-2 font-body-md text-body-md text-on-primary/80">
-          Parent
+          Parents
         </Text>
       </View>
     </Screen>

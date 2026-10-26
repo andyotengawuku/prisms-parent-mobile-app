@@ -1,18 +1,20 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { PressableScale } from "./PressableScale";
 
 type Props = {
   title?: string;
   subtitle?: string;
+  eyebrow?: string;
   onBack?: () => void;
+  showLogo?: boolean;
   right?: React.ReactNode;
 };
 
-export function AppBar({ title, subtitle, onBack, right }: Props) {
+export function AppBar({ title, subtitle, eyebrow, onBack, showLogo, right }: Props) {
   return (
-    <View className="flex-row items-center justify-between h-touch-target-min min-h-touch-target-min mb-stack-sm">
+    <View className="flex-row items-center justify-between min-h-touch-target-min mb-stack-sm">
       <View className="flex-row items-center gap-3 flex-1">
         {onBack ? (
           <PressableScale
@@ -25,14 +27,29 @@ export function AppBar({ title, subtitle, onBack, right }: Props) {
             <MaterialCommunityIcons
               name="arrow-left"
               size={24}
-              color="#1a1c1e"
+              color="#201a1c"
             />
           </PressableScale>
         ) : null}
+        {showLogo ? (
+          <Image
+            source={require("../../assets/school-logo.png")}
+            style={{ width: 44, height: 44 }}
+            accessibilityLabel="School logo"
+          />
+        ) : null}
         <View className="flex-1">
+          {eyebrow ? (
+            <Text
+              className="font-label-md text-label-md text-primary uppercase"
+              numberOfLines={1}
+            >
+              {eyebrow}
+            </Text>
+          ) : null}
           {title ? (
             <Text
-              className="font-headline-sm text-headline-sm text-on-surface"
+              className="font-display-lg text-display-lg text-on-surface"
               numberOfLines={1}
             >
               {title}

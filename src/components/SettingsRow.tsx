@@ -25,7 +25,7 @@ export function SettingsRow({
     <>
       {icon ? (
         <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-surface-container-high">
-          <MaterialCommunityIcons name={icon} size={20} color="#00629e" />
+          <MaterialCommunityIcons name={icon} size={20} color="#76023a" />
         </View>
       ) : null}
       <View className="flex-1">
@@ -41,11 +41,11 @@ export function SettingsRow({
           value={switchValue}
           onValueChange={onSwitchChange}
           accessibilityLabel={label}
-          trackColor={{ false: "#bec7d4", true: "#00a1ff" }}
+          trackColor={{ false: "#d5c2c6", true: "#ffc904" }}
           thumbColor="#ffffff"
         />
       ) : (
-        <MaterialCommunityIcons name="chevron-right" size={22} color="#6f7883" />
+        <MaterialCommunityIcons name="chevron-right" size={22} color="#837377" />
       )}
     </>
   );

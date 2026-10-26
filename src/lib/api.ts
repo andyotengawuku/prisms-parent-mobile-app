@@ -10,7 +10,7 @@ export type ApiEnvelope<T> = {
   error: { code: string; message: string; details?: Record<string, unknown> } | null;
 };
 
-// Base is the PRISMS API root (the Next.js app serves /api/* itself).
+// Base is the PRIS API root (the Next.js app serves /api/* itself).
 // Dev default targets a local server; production sets EXPO_PUBLIC_API_BASE_URL.
 const API_BASE = (
   process.env.EXPO_PUBLIC_API_BASE_URL ??

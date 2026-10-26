@@ -31,7 +31,7 @@ export function PaymentMethodRow({
       }`}
     >
       <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-container-high">
-        <MaterialCommunityIcons name={icon} size={22} color="#00629e" />
+        <MaterialCommunityIcons name={icon} size={22} color="#76023a" />
       </View>
       <View className="flex-1">
         <Text className="font-headline-sm text-body-lg text-on-surface">
@@ -44,7 +44,7 @@ export function PaymentMethodRow({
         ) : null}
       </View>
       {selected ? (
-        <MaterialCommunityIcons name="check-circle" size={22} color="#00629e" />
+        <MaterialCommunityIcons name="check-circle" size={22} color="#76023a" />
       ) : null}
     </PressableScale>
   );

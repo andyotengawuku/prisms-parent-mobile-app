@@ -39,7 +39,7 @@ export function AlertRow({ alert, onPress }: Props) {
         <MaterialCommunityIcons
           name={ICONS[alert.category]}
           size={20}
-          color="#00629e"
+          color="#76023a"
         />
       </View>
       <View className="flex-1">

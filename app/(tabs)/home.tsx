@@ -48,7 +48,7 @@ export default function HomeScreen() {
   if (isLoading && !data) {
     return (
       <Screen>
-        <AppBar title="PRISMS" />
+        <AppBar title="PRIS" showLogo />
         <SkeletonBlock />
         <SkeletonBlock />
         <GhostButton
@@ -62,7 +62,7 @@ export default function HomeScreen() {
   if (isError || !data) {
     return (
       <Screen>
-        <AppBar title="PRISMS" />
+        <AppBar title="PRIS" showLogo />
         <ErrorBanner
           message="Couldn't load your home feed."
           onRetry={() => refetch()}
@@ -78,8 +78,10 @@ export default function HomeScreen() {
   return (
     <Screen scroll padded edges={["top", "left", "right"]}>
       <AppBar
+        eyebrow="PRIS Parents"
         title={`${data.greeting}, ${data.parentName.split(" ")[0]}`}
         subtitle="Here's what's happening today"
+        showLogo
       />
       <SectionHeader title="Your children" />
       <FlatList
@@ -111,11 +113,13 @@ export default function HomeScreen() {
         <QuickActionTile
           label="Pay fees"
           icon="cash"
+          tint="green"
           onPress={() => router.push("/(tabs)/fees")}
         />
         <QuickActionTile
           label="Gate pass"
           icon="qrcode"
+          tint="maroon"
           onPress={() => router.push("/pickup")}
         />
       </View>
@@ -123,11 +127,13 @@ export default function HomeScreen() {
         <QuickActionTile
           label="Report cards"
           icon="file-document-outline"
+          tint="violet"
           onPress={() => router.push("/(tabs)/academics")}
         />
         <QuickActionTile
           label="Alerts"
           icon="bell-outline"
+          tint="rose"
           onPress={() => router.push("/(tabs)/alerts")}
         />
       </View>
@@ -135,11 +141,13 @@ export default function HomeScreen() {
         <QuickActionTile
           label="Canteen"
           icon="food-outline"
+          tint="gold"
           onPress={() => router.push("/canteen")}
         />
         <QuickActionTile
           label="Notify school"
           icon="email-alert-outline"
+          tint="teal"
           onPress={() => router.push("/notice")}
         />
       </View>

@@ -6,11 +6,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from "@expo-google-fonts/nunito";
 import * as SplashScreen from "expo-splash-screen";
 import { ThemeProvider, useTheme } from "../src/lib/theme";
 import * as Notifications from "expo-notifications";
@@ -109,10 +110,11 @@ export default function RootLayout() {
   );
 
   const [fontsLoaded] = useFonts({
-    Inter: Inter_400Regular,
-    InterMedium: Inter_500Medium,
-    InterSemiBold: Inter_600SemiBold,
-    InterBold: Inter_700Bold,
+    Inter: Nunito_400Regular,
+    InterMedium: Nunito_500Medium,
+    InterSemiBold: Nunito_600SemiBold,
+    InterBold: Nunito_700Bold,
+    InterExtraBold: Nunito_800ExtraBold,
   });
 
   if (!fontsLoaded) {

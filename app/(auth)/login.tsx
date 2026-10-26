@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Image, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import {
-  AppBar,
   FilterChip,
   PinKeypad,
   PINInput,
@@ -86,10 +85,22 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <AppBar
-        title="Welcome back"
-        subtitle="Sign in with your Parent ID and PIN"
-      />
+      <View className="mb-4 items-center">
+        <Image
+          source={require("../../assets/school-logo.png")}
+          style={{ width: 88, height: 88 }}
+          accessibilityLabel="School logo"
+        />
+        <Text className="mt-3 font-label-md text-label-md uppercase tracking-widest text-primary">
+          PRIS Parents
+        </Text>
+        <Text className="font-display-lg text-display-lg text-on-surface">
+          Welcome back
+        </Text>
+        <Text className="text-center font-body-md text-body-md text-on-surface-variant">
+          Sign in with your Parent ID and PIN
+        </Text>
+      </View>
       <Text className="mb-2 font-label-md text-label-md text-on-surface-variant">
         Parent ID
       </Text>

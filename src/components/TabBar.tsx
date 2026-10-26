@@ -51,7 +51,7 @@ export function TabBar({ active, onChange, unreadAlerts = 0 }: Props) {
     <View className="flex-row border-t border-outline-variant/40 bg-surface-container-lowest px-2 pt-1 pb-2">
       {TABS.map((tab) => {
         const selected = tab.key === active;
-        const color = selected ? "#00629e" : "#6f7883";
+        const color = selected ? "#76023a" : "#837377";
         return (
           <PressableScale
             key={tab.key}
