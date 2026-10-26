@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FlatList, Text, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -7,9 +8,10 @@ import {
   ChildCard,
   ErrorBanner,
   GhostButton,
+  HubNav,
   LunchWalletCard,
   OutstandingBanner,
-  QuickActionTile,
+  PressableScale,
   Screen,
   SectionHeader,
   SkeletonBlock,
@@ -17,6 +19,15 @@ import {
 import { useHome } from "../../src/hooks/useHome";
 import { logoutSession } from "../../src/lib/api";
 import { unregisterPush } from "../../src/lib/push";
+
+const TINTS = {
+  maroon: { bg: "#ffd9e2", fg: "#76023a" },
+  gold: { bg: "#ffdf9b", fg: "#7a5900" },
+  green: { bg: "#96f7b0", fg: "#006d37" },
+  rose: { bg: "#ffe3e0", fg: "#b3261e" },
+  teal: { bg: "#c6f0ef", fg: "#00696d" },
+  violet: { bg: "#e8dcff", fg: "#5b3a9c" },
+} as const;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -75,6 +86,8 @@ export default function HomeScreen() {
     );
   }
 
+  const firstChildId = data.children[0]?.id;
+
   return (
     <Screen scroll padded edges={["top", "left", "right"]}>
       <AppBar
@@ -83,6 +96,82 @@ export default function HomeScreen() {
         subtitle="Here's what's happening today"
         showLogo
       />
+
+      <HubNav
+        onCenterPress={() => router.push("/pickup")}
+        satellites={[
+          {
+            key: "attendance",
+            label: "Attendance",
+            icon: "calendar-check-outline",
+            tint: TINTS.green,
+            onPress: () =>
+              router.push(firstChildId ? `/child/${firstChildId}` : "/(tabs)/academics"),
+          },
+          {
+            key: "canteen",
+            label: "Canteen",
+            icon: "food-outline",
+            tint: TINTS.gold,
+            onPress: () => router.push("/canteen"),
+          },
+          {
+            key: "fees",
+            label: "Fees",
+            icon: "cash",
+            tint: TINTS.green,
+            onPress: () => router.push("/(tabs)/fees"),
+          },
+          {
+            key: "notify",
+            label: "Notify",
+            icon: "email-alert-outline",
+            tint: TINTS.teal,
+            onPress: () => router.push("/notice"),
+          },
+          {
+            key: "academics",
+            label: "Results",
+            icon: "file-document-outline",
+            tint: TINTS.violet,
+            onPress: () => router.push("/(tabs)/academics"),
+          },
+          {
+            key: "alerts",
+            label: "Alerts",
+            icon: "bell-outline",
+            tint: TINTS.rose,
+            onPress: () => router.push("/(tabs)/alerts"),
+          },
+        ]}
+      />
+
+      {/* one-tap notices, SmartSapp-style */}
+      <View className="mb-stack-md mt-stack-sm flex-row gap-3">
+        <PressableScale
+          onPress={() => router.push("/notice?type=lateness")}
+          accessibilityRole="button"
+          accessibilityLabel="Will be late"
+          className="min-h-touch-target-min flex-1 flex-row items-center justify-center gap-2 rounded-full bg-secondary-container px-4"
+        >
+          <MaterialCommunityIcons name="clock-alert-outline" size={20} color={TINTS.gold.fg} />
+          <Text className="font-headline-sm text-body-md text-on-secondary-container">
+            Will be late
+          </Text>
+        </PressableScale>
+        <PressableScale
+          onPress={() => router.push("/notice?type=absence")}
+          accessibilityRole="button"
+          accessibilityLabel="Will be absent"
+          className="min-h-touch-target-min flex-1 flex-row items-center justify-center gap-2 rounded-full bg-primary-container px-4"
+        >
+          <MaterialCommunityIcons name="home-remove-outline" size={20} color={TINTS.maroon.fg} />
+          <Text className="font-headline-sm text-body-md text-on-primary-container">
+            Will be absent
+          </Text>
+        </PressableScale>
+      </View>
+
       <SectionHeader title="Your children" />
       <FlatList
         horizontal
@@ -107,50 +196,6 @@ export default function HomeScreen() {
           onPay={() => router.push("/(tabs)/fees")}
         />
       ) : null}
-
-      <SectionHeader title="Quick actions" />
-      <View className="mb-stack-md flex-row gap-3">
-        <QuickActionTile
-          label="Pay fees"
-          icon="cash"
-          tint="green"
-          onPress={() => router.push("/(tabs)/fees")}
-        />
-        <QuickActionTile
-          label="Gate pass"
-          icon="qrcode"
-          tint="maroon"
-          onPress={() => router.push("/pickup")}
-        />
-      </View>
-      <View className="mb-stack-md flex-row gap-3">
-        <QuickActionTile
-          label="Report cards"
-          icon="file-document-outline"
-          tint="violet"
-          onPress={() => router.push("/(tabs)/academics")}
-        />
-        <QuickActionTile
-          label="Alerts"
-          icon="bell-outline"
-          tint="rose"
-          onPress={() => router.push("/(tabs)/alerts")}
-        />
-      </View>
-      <View className="mb-stack-md flex-row gap-3">
-        <QuickActionTile
-          label="Canteen"
-          icon="food-outline"
-          tint="gold"
-          onPress={() => router.push("/canteen")}
-        />
-        <QuickActionTile
-          label="Notify school"
-          icon="email-alert-outline"
-          tint="teal"
-          onPress={() => router.push("/notice")}
-        />
-      </View>
 
       <SectionHeader title="Lunch wallet" />
       {data.lunchWalletAvailable ? (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AppBar,
@@ -61,11 +61,14 @@ export default function NoticeScreen() {
   const home = useHome();
   const children = home.data?.children ?? [];
   const notices = useNotices();
+  const params = useLocalSearchParams<{ type?: string }>();
 
   const [selectedChildId, setSelectedChildId] = useState<string>();
   const selectedChild = children.find((child) => child.id === selectedChildId) ?? children[0];
 
-  const [type, setType] = useState<"absence" | "lateness">("absence");
+  const [type, setType] = useState<"absence" | "lateness">(
+    params.type === "lateness" ? "lateness" : "absence",
+  );
   const [startDate, setStartDate] = useState(() => isoDate(new Date()));
   const [endDate, setEndDate] = useState<string | null>(null);
   const [expectedTime, setExpectedTime] = useState("08:30");

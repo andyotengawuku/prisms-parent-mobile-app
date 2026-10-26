@@ -11,6 +11,7 @@ export { AttendanceChip } from "./AttendanceChip";
 export { MovementBadge } from "./MovementBadge";
 export { OutstandingBanner } from "./OutstandingBanner";
 export { QuickActionTile } from "./QuickActionTile";
+export { HubNav } from "./HubNav";
 export { MoneyText } from "./MoneyText";
 export { InvoiceCard } from "./InvoiceCard";
 export { StatusChip } from "./StatusChip";
