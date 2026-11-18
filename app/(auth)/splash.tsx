@@ -44,6 +44,9 @@ export default function SplashScreen() {
         <Text className="mt-2 font-body-md text-body-md text-on-primary/80">
           Parents
         </Text>
+        <Text className="mt-3 font-label-md text-label-md uppercase tracking-[0.18em] text-on-primary/60">
+          Knowledge, Excellence &amp; Honour
+        </Text>
       </View>
     </Screen>
   );
